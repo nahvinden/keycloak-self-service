@@ -59,6 +59,17 @@ Stop:
 docker compose down
 ```
 
+
+
+```markdown
+The container listens on `0.0.0.0:3001`, and maps to `http://localhost:3001`.
+
+If Keycloak is running on your host machine at `http://localhost:8080`, use
+`http://host.docker.internal:8080` for `KEYCLOAK_BASE_URL` when running in Docker.
+```
+
+
+
 ## Environment Variables
 
 ```env
