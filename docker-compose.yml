@@ -1,0 +1,11 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: keycloak-self-service
+    env_file:
+      - .env.local
+    ports:
+      - "3001:3001"
+    restart: unless-stopped

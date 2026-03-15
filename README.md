@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Keycloak Role Membership Self-Service
 
-## Getting Started
+Simple web app where users sign in with Keycloak and manage **their own realm role memberships**.
 
-First, run the development server:
+## What it does
+
+- Requires login against your Keycloak realm (OIDC Authorization Code flow)
+- Loads the authenticated user's own role memberships
+- Lets users add/remove their own realm-role memberships and save changes
+- Uses Keycloak Admin REST API from server-side routes
+
+## Setup
+
+1. Copy `.env.example` to `.env.local`
+2. Fill in your Keycloak details
+3. Run the app
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3001](http://localhost:3001).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Build the image:
 
-## Learn More
+```bash
+docker build -t keycloak-self-service .
+```
 
-To learn more about Next.js, take a look at the following resources:
+Run the container with your local env file:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+docker run --rm -p 3001:3001 --env-file .env.local keycloak-self-service
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Then open [http://localhost:3001](http://localhost:3001).
 
-## Deploy on Vercel
+If you change the external port or host, make sure `APP_BASE_URL` in `.env.local` matches the URL you use in the browser.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Docker Compose
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Start with Compose:
+
+```bash
+docker compose up --build
+```
+
+Run in background:
+
+```bash
+docker compose up --build -d
+```
+
+Stop:
+
+```bash
+docker compose down
+```
+
+## Environment Variables
+
+```env
+KEYCLOAK_BASE_URL=https://your-keycloak.example.com
+KEYCLOAK_REALM=your-realm
+KEYCLOAK_ADMIN_CLIENT_ID=your-admin-client-id
+KEYCLOAK_ADMIN_CLIENT_SECRET=your-admin-client-secret
+KEYCLOAK_APP_CLIENT_ID=your-app-client-id
+KEYCLOAK_APP_CLIENT_SECRET=your-app-client-secret
+APP_BASE_URL=http://localhost:3001
+SESSION_SECRET=replace-with-a-long-random-string
+```
+
+### Required Keycloak permissions
+
+The admin client (`KEYCLOAK_ADMIN_CLIENT_ID`) needs permissions to:
+
+- view-users
+- manage-users
+
+Authentication flows:
+
+- Direct access grants
+- Service account roles
+
+The app login client (`KEYCLOAK_APP_CLIENT_ID`) must:
+
+- be a confidential client
+- allow standard authorization code flow
+- include `APP_BASE_URL/api/auth/callback` in valid redirect URIs
+
